@@ -46,12 +46,12 @@ export default function diffLogger(prevState, newState, logger, isCollapsed) {
 
   try {
     if (isCollapsed) {
-      logger.groupCollapsed('diff');
+      logger.send('groupCollapsed', 'diff');
     } else {
-      logger.group('diff');
+      logger.send('group', 'diff');
     }
   } catch (e) {
-    logger.log('diff');
+    logger.info('diff');
   }
 
   if (diff) {
@@ -59,15 +59,15 @@ export default function diffLogger(prevState, newState, logger, isCollapsed) {
       const { kind } = elem;
       const output = render(elem);
 
-      logger.log(`%c ${dictionary[kind].text}`, style(kind), ...output);
+      logger.info(`%c ${dictionary[kind].text}`, style(kind), ...output);
     });
   } else {
-    logger.log('—— no diff ——');
+    logger.info('—— no diff ——');
   }
 
   try {
-    logger.groupEnd();
+    logger.send('groupEnd');
   } catch (e) {
-    logger.log('—— diff end —— ');
+    logger.info('—— diff end —— ');
   }
 }

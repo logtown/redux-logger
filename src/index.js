@@ -25,18 +25,12 @@ function createLogger(options = {}) {
   const loggerOptions = Object.assign({}, defaults, options);
 
   const {
-    logger,
     stateTransformer,
     errorTransformer,
     predicate,
     logErrors,
     diffPredicate,
   } = loggerOptions;
-
-  // Return if 'console' object is not defined
-  if (typeof logger === 'undefined') {
-    return () => next => action => next(action);
-  }
 
   // Detect if 'createLogger' was passed directly to 'applyMiddleware'.
   if (options.getState && options.dispatch) {

@@ -1,5 +1,6 @@
 import { formatTime } from './helpers';
 import diffLogger from './diff';
+import logtown from 'logtown';
 
 /**
  * Get log level string based on supplied params
@@ -38,14 +39,15 @@ function defaultTitleFormatter(options) {
 
 function printBuffer(buffer, options) {
   const {
-    logger,
     actionTransformer,
     titleFormatter = defaultTitleFormatter(options),
     collapsed,
     colors,
     level,
     diff,
+    appName,
   } = options;
+  const logger = logtown(appName);
 
   const isUsingDefaultFormatter = typeof options.titleFormatter === 'undefined';
 
@@ -77,15 +79,17 @@ function printBuffer(buffer, options) {
     try {
       if (isCollapsed) {
         if (colors.title && isUsingDefaultFormatter) {
-          logger.groupCollapsed(`%c ${title}`, ...headerCSS);
-        } else logger.groupCollapsed(title);
+          logger.send('groupCollapsed', `%c ${title}`, ...headerCSS);
+        } else {
+          logger.send('groupCollapsed', title);
+        }
       } else if (colors.title && isUsingDefaultFormatter) {
-        logger.group(`%c ${title}`, ...headerCSS);
+        logger.send('group', `%c ${title}`, ...headerCSS);
       } else {
-        logger.group(title);
+        logger.send('group', title);
       }
     } catch (e) {
-      logger.log(title);
+      logger.info(title);
     }
 
     const prevStateLevel = getLogLevel(level, formattedAction, [prevState], 'prevState');
@@ -113,8 +117,8 @@ function printBuffer(buffer, options) {
       if (colors.error) {
         const styles = `color: ${colors.error(error, prevState)}; font-weight: bold;`;
 
-        logger[errorLevel]('%c error     ', styles, error);
-      } else logger[errorLevel]('error     ', error);
+        logger.error('%c error     ', styles, error);
+      } else logger.error('error     ', error);
     }
 
     if (nextStateLevel) {
@@ -126,9 +130,9 @@ function printBuffer(buffer, options) {
     }
 
     if (logger.withTrace) {
-      logger.groupCollapsed('TRACE');
-      logger.trace();
-      logger.groupEnd();
+      logger.send('groupCollapsed', 'TRACE');
+      logger.send('trace');
+      logger.send('groupEnd');
     }
 
     if (diff) {
@@ -136,9 +140,9 @@ function printBuffer(buffer, options) {
     }
 
     try {
-      logger.groupEnd();
+      logger.send('groupEnd');
     } catch (e) {
-      logger.log('—— log end ——');
+      logger.info('—— log end ——');
     }
   });
 }
